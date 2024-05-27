@@ -15,6 +15,7 @@ import android.os.Looper
 import android.os.PowerManager
 import android.os.RemoteException
 import android.util.Log
+import android.util.Xml
 import android.widget.Button
 import android.widget.TextView
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -31,6 +32,10 @@ import me.bvn13.sdk.android.gpx.RteType
 import me.bvn13.sdk.android.gpx.TrkType
 import me.bvn13.sdk.android.gpx.TrksegType
 import me.bvn13.sdk.android.gpx.WptType
+import org.xmlpull.v1.XmlSerializer
+import java.io.File
+import java.io.FileOutputStream
+import java.io.OutputStreamWriter
 import java.lang.Exception
 import java.time.OffsetDateTime
 
@@ -40,6 +45,7 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var locationCallback: LocationCallback
     private lateinit var fusedLucationProviderClient: FusedLocationProviderClient
+
 
     private  var gpsService: IGPSService? = null
 
@@ -83,6 +89,8 @@ class MainActivity : ComponentActivity() {
 
             //startLocationUpdates()
         }
+
+
         val stopButton: Button = findViewById(R.id.stop)
         stopButton.setOnClickListener {
             if(bond) {
@@ -98,6 +106,16 @@ class MainActivity : ComponentActivity() {
                     gpsService?.latitude.toString(), gpsService?.longitude.toString(),
                     gpsService?.altitude.toString())
                 Log.w(TAG, gpsService?.latitude.toString())
+            } catch (e: RemoteException) {
+                e.printStackTrace()
+            }
+        }
+
+        val exportToGpx: Button = findViewById(R.id.export)
+        exportToGpx.setOnClickListener {
+            try {
+                gpsService?.exportToGpx()
+                Log.w(TAG, "exported to file")
             } catch (e: RemoteException) {
                 e.printStackTrace()
             }
@@ -159,182 +177,4 @@ class MainActivity : ComponentActivity() {
     }
 
     // permission is checked in onCreate...
-    private fun gpx() {
-        val gpxType = GpxType(
-            MetadataType("test name", description = "test description", authorName = "bvn13"),
-            wpt = listOf(
-                WptType(
-                    lat = 14.64736838389662,
-                    lon = 7.93212890625,
-                    ele = 10.toDouble(),
-                    time = OffsetDateTime.now(),
-                    magvar = 3.toDouble(),
-                    geoidheight = 45.toDouble(),
-                    name = "test point 1",
-                    cmt = "comment 1",
-                    desc = "description of point 1",
-                    link = listOf(
-                        LinkType(
-                            href = "http://link-to.site.href",
-                            text = "text",
-                            type = "hyperlink"
-                        ),
-                        LinkType(
-                            href = "http://link2-to.site.href",
-                            text = "text2",
-                            type = "hyperlink2"
-                        )
-                    ),
-                    src = "source 1",
-                    sym = "sym 1",
-                    type = "type 1",
-                    fix = FixType.DGPS,
-                    sat = 1,
-                    hdop = 55.toDouble(),
-                    vdop = 66.toDouble(),
-                    pdop = 77.toDouble(),
-                    ageofgpsdata = 44,
-                    dgpsid = 88,
-                    extensions = listOf(
-                        ExtensionType(
-                            "extension1",
-                            parameters = mapOf(Pair("first", "second"), Pair("third", "fours"))
-                        ),
-                        ExtensionType(
-                            "extension2",
-                            parameters = mapOf(Pair("aa", "bb"), Pair("cc", "dd"))
-                        )
-                    )
-                )
-            ),
-            rte = listOf(
-                RteType(
-                    name = "rte name",
-                    cmt = "cmt",
-                    desc = "desc",
-                    src = "src",
-                    link = listOf(
-                        LinkType(
-                            href = "https://new.link.rte",
-                            text = "new text rte",
-                            type = "hyperlink"
-                        )
-                    ),
-                    number = 1234,
-                    type = "route",
-                    extensions = listOf(
-                        ExtensionType(
-                            "ext-1",
-                            value = "value1"
-                        )
-                    ),
-                    rtept = listOf(
-                        WptType(
-                            lat = 14.64736838389662,
-                            lon = 7.93212890625,
-                            ele = 10.toDouble(),
-                            time = OffsetDateTime.now(clock),
-                            magvar = 3.toDouble(),
-                            geoidheight = 45.toDouble(),
-                            name = "test point 1",
-                            cmt = "comment 1",
-                            desc = "description of point 1",
-                            link = listOf(
-                                LinkType(
-                                    href = "http://link-to.site.href",
-                                    text = "text",
-                                    type = "hyperlink"
-                                ),
-                                LinkType(
-                                    href = "http://link2-to.site.href",
-                                    text = "text2",
-                                    type = "hyperlink2"
-                                )
-                            ),
-                            src = "source 1",
-                            sym = "sym 1",
-                            type = "type 1",
-                            fix = FixType.DGPS,
-                            sat = 1,
-                            hdop = 55.toDouble(),
-                            vdop = 66.toDouble(),
-                            pdop = 77.toDouble(),
-                            ageofgpsdata = 44,
-                            dgpsid = 88,
-                            extensions = listOf(
-                                ExtensionType(
-                                    "extension1",
-                                    parameters = mapOf(Pair("first", "second"), Pair("third", "fours"))
-                                ),
-                                ExtensionType(
-                                    "extension2",
-                                    parameters = mapOf(Pair("aa", "bb"), Pair("cc", "dd"))
-                                )
-                            )
-                        )
-                    )
-                )
-            ),
-            trk = listOf(
-                TrkType(
-                    name = "track 1",
-                    cmt = "comment track 1",
-                    desc = "desc track 1",
-                    src = "src track 1",
-                    number = 1234,
-                    type = "type 1",
-                    trkseg = listOf(
-                        TrksegType(
-                            listOf(
-                                WptType(
-                                    lat = 14.64736838389662,
-                                    lon = 7.93212890625,
-                                    ele = 10.toDouble(),
-                                    time = OffsetDateTime.now(clock),
-                                    magvar = 3.toDouble(),
-                                    geoidheight = 45.toDouble(),
-                                    name = "test point 1",
-                                    cmt = "comment 1",
-                                    desc = "description of point 1",
-                                    link = listOf(
-                                        LinkType(
-                                            href = "http://link-to.site.href",
-                                            text = "text",
-                                            type = "hyperlink"
-                                        ),
-                                        LinkType(
-                                            href = "http://link2-to.site.href",
-                                            text = "text2",
-                                            type = "hyperlink2"
-                                        )
-                                    ),
-                                    src = "source 1",
-                                    sym = "sym 1",
-                                    type = "type 1",
-                                    fix = FixType.DGPS,
-                                    sat = 1,
-                                    hdop = 55.toDouble(),
-                                    vdop = 66.toDouble(),
-                                    pdop = 77.toDouble(),
-                                    ageofgpsdata = 44,
-                                    dgpsid = 88,
-                                    extensions = listOf(
-                                        ExtensionType(
-                                            "extension1",
-                                            parameters = mapOf(Pair("first", "second"), Pair("third", "fours"))
-                                        ),
-                                        ExtensionType(
-                                            "extension2",
-                                            parameters = mapOf(Pair("aa", "bb"), Pair("cc", "dd"))
-                                        )
-                                    )
-                                )
-                            )
-                        )
-                    )
-                )
-            )
-        )
-
-    }
 }

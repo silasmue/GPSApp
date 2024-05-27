@@ -13,4 +13,5 @@ interface IGPSService {
 
     float getAltitude();
 
+    void exportToGpx();
 }
